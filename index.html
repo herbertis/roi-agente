@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI & Modelo Financeiro - Agente Inteligente de Viagens</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-primary: #090D16;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --bg-card-hover: rgba(31, 41, 55, 0.85);
+            --bg-input: rgba(31, 41, 55, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-color-hover: rgba(59, 130, 246, 0.3);
+            
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+            
+            --accent-blue: #3B82F6;
+            --accent-blue-glow: rgba(59, 130, 246, 0.25);
+            --accent-green: #10B981;
+            --accent-green-glow: rgba(16, 185, 129, 0.2);
+            --accent-amber: #F59E0B;
+            --accent-purple: #8B5CF6;
+            --accent-rose: #EF4444;
+            --accent-cyan: #06B6D4;
+            
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            
+            --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .light {
+            --bg-primary: #F8FAFC;
+            --bg-secondary: #FFFFFF;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: #FFFFFF;
+            --bg-input: #F1F5F9;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --border-color-hover: rgba(59, 130, 246, 0.4);
+            
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            
+            --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+            padding-bottom: 60px;
+        }
+
+        /* Container Layout */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header Styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 28px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-card);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 0 20px var(--accent-blue-glow);
+        }
+
+        .brand-text h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .light .brand-text h1 {
+            background: linear-gradient(135deg, #0F172A 0%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Scenario Selector Pills */
+        .scenario-selector {
+            display: flex;
+            background: var(--bg-input);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .scenario-btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scenario-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-blue-glow);
+        }
+
+        .btn-icon-only {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-icon-only:hover {
+            border-color: var(--border-color-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Hero KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--card-accent, var(--accent-blue));
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-color-hover);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .kpi-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .kpi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--card-accent, var(--accent-blue));
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.03em;
+            margin-bottom: 4px;
+        }
+
+        .kpi-subtext {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: thin;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-btn.active {
+            color: white;
+            background: var(--accent-blue);
+            box-shadow: 0 4px 14px var(--accent-blue-glow);
+        }
+
+        /* Tab Content Panels */
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Content Section Cards */
+        .section-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--accent-blue);
+        }
+
+        /* Table Design System */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        th {
+            padding: 14px 18px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .num-cell {
+            font-family: 'JetBrains Mono', monospace;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .highlight-row {
+            background: rgba(59, 130, 246, 0.08) !important;
+            font-weight: 600;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-rose);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form & Simulator Inputs */
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .input-value-badge {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-input);
+            outline: none;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px var(--accent-blue-glow);
+        }
+
+        /* Callout Box */
+        .callout {
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--accent-blue);
+            background: rgba(59, 130, 246, 0.08);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .callout-icon {
+            color: var(--accent-blue);
+            margin-top: 2px;
+        }
+
+        .callout-content p {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        .callout-content strong {
+            color: var(--text-primary);
+        }
+
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+
+        /* Color legend indicator */
+        .legend-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        /* Heatmap Table Cell styling */
+        .heat-low { background: rgba(16, 185, 129, 0.15) !important; color: #34D399; }
+        .heat-mid { background: rgba(245, 158, 11, 0.15) !important; color: #FBBF24; }
+        .heat-high { background: rgba(239, 68, 68, 0.15) !important; color: #F87171; }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <i data-lucide="plane-takeoff" size="26"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Agente Inteligente de Viagens</h1>
+                    <p>Modelo Financeiro, Viabilidade, Margem de Contribuição & ROI 12 Meses</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="scenario-selector">
+                    <button class="scenario-btn" onclick="setScenario('Minimo')">
+                        <i data-lucide="shield" size="14"></i> Mínimo
+                    </button>
+                    <button class="scenario-btn active" onclick="setScenario('Base')">
+                        <i data-lucide="target" size="14"></i> Base (Plano)
+                    </button>
+                    <button class="scenario-btn" onclick="setScenario('Maximo')">
+                        <i data-lucide="zap" size="14"></i> Máximo
+                    </button>
+                </div>
+                <button class="btn-icon-only" onclick="toggleTheme()" title="Alternar Tema (Claro/Escuro)">
+                    <i data-lucide="moon" size="18" id="theme-icon"></i>
+                </button>
+                <button class="btn-icon-only" onclick="window.print()" title="Imprimir Relatório">
+                    <i data-lucide="printer" size="18"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI Executive Hero Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card" style="--card-accent: var(--accent-green);">
+                <div class="kpi-header">
+                    <span class="kpi-title">ROI em 12 Meses (Plano Base)</span>
+                    <div class="kpi-icon"><i data-lucide="trending-up" size="20"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-roi">+202.6%</div>
+                <div class="kpi-subtext">
+                    <span class="badge badge-success" id="kpi-roi-badge"><i data-lucide="arrow-up-right" size="12"></i> Passe R$ 39,90</span>
+                    <span>@ 100 usuários/mês</span>
+                </div>
+            </div>
+
+            <div class="kpi-card" style="--card-accent: var(--accent-blue);">
+                <div class="kpi-header">
+                    <span class="kpi-title">Margem de Contribuição</span>
+                    <div class="kpi-icon"><i data-lucide="pie-chart" size="20"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-margin">R$ 31,10</div>
+                <div class="kpi-subtext">
+                    <span class="badge badge-info" id="kpi-margin-pct">77.9% da Receita</span>
+                    <span>Custo var: R$ 8,80/mês</span>
+                </div>
+            </div>
+
+            <div class="kpi-card" style="--card-accent: var(--accent-purple);">
+                <div class="kpi-header">
+                    <span class="kpi-title">Ponto de Equilíbrio</span>
+                    <div class="kpi-icon"><i data-lucide="scale" size="20"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-breakeven">13 usu/mês</div>
+                <div class="kpi-subtext">
+                    <span id="kpi-fixed-cost">Custo fixo: R$ 400,00/mês</span>
+                </div>
+            </div>
+
+            <div class="kpi-card" style="--card-accent: var(--accent-amber);">
+                <div class="kpi-header">
+                    <span class="kpi-title">Investimento Inicial</span>
+                    <div class="kpi-icon"><i data-lucide="wallet" size="20"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-investment">R$ 10.747,50</div>
+                <div class="kpi-subtext">
+                    <span>Piloto: R$ 747,50 + Outros R$ 10.000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-overview')">
+                <i data-lucide="bar-chart-3" size="16"></i> Visão Geral & Dashboard
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-simulator')">
+                <i data-lucide="sliders" size="16"></i> Simulador Interativo
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-flight')">
+                <i data-lucide="plane" size="16"></i> Custo Dados de Voo
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-margin')">
+                <i data-lucide="dollar-sign" size="16"></i> Margem por Usuário
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-pilot')">
+                <i data-lucide="rocket" size="16"></i> Piloto (60 Dias)
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-roi')">
+                <i data-lucide="line-chart" size="16"></i> Projeção ROI (12 Meses)
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-assumptions')">
+                <i data-lucide="file-text" size="16"></i> Premissas & Metodologia
+            </button>
+        </div>
+
+        <!-- TAB 1: EXECUTIVE OVERVIEW -->
+        <div id="tab-overview" class="tab-panel active">
+            <div class="grid-2">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i data-lucide="trending-up"></i> Lucro Acumulado Projetado (12 Meses)
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-roi-overview"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i data-lucide="pie-chart"></i> Composição do Custo Variável / Usuário (Base)
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-cost-breakdown"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i data-lucide="award"></i> Destaques Executivos & Alavancas de Negócio
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="callout">
+                        <div class="callout-icon"><i data-lucide="check-circle-2" size="22"></i></div>
+                        <div class="callout-content">
+                            <strong>Alta Margem Unitária (77.9% no Passe Médio):</strong>
+                            <p>No cenário Base (R$ 39,90/passe), o custo variável total é de apenas R$ 8,80 por usuário/mês, gerando R$ 31,10 de margem líquida direta por passe.</p>
+                        </div>
+                    </div>
+                    <div class="callout">
+                        <div class="callout-icon"><i data-lucide="layers" size="22"></i></div>
+                        <div class="callout-content">
+                            <strong>Flexibilidade de Datas é a Maior Alavanca:</strong>
+                            <p>Cada combinação de ida/volta gera 1 busca na API. Passar de 3 para 10 combinações sextuplica o custo de dados de voo (de R$ 4,95 para R$ 16,50/usuário).</p>
+                        </div>
+                    </div>
+                    <div class="callout">
+                        <div class="callout-icon"><i data-lucide="anchor" size="22"></i></div>
+                        <div class="callout-content">
+                            <strong>Baixíssimo Ponto de Equilíbrio:</strong>
+                            <p>Com custo fixo operacional estimado em R$ 400/mês para o MVP, são necessários apenas 13 usuários ativos no Passe Médio para cobrir todas as despesas operacionais.</p>
+                        </div>
+                    </div>
+                    <div class="callout">
+                        <div class="callout-icon"><i data-lucide="zap" size="22"></i></div>
+                        <div class="callout-content">
+                            <strong>Piloto Enxuto de 60 Dias:</strong>
+                            <p>O custo de caixa para rodar o piloto de 60 dias com 25 participantes é de apenas R$ 747,50 (R$ 29,90 por participante no período total).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: INTERACTIVE SIMULATOR -->
+        <div id="tab-simulator" class="tab-panel">
+            <div class="grid-2">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i data-lucide="sliders"></i> Parâmetros do Simulador
+                        </div>
+                        <button class="scenario-btn" onclick="resetSimulator()">
+                            <i data-lucide="rotate-ccw" size="14"></i> Resetar
+                        </button>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <span>Preço do Passe Médio (R$)</span>
+                            <span class="input-value-badge" id="val-price-medio">R$ 39,90</span>
+                        </div>
+                        <input type="range" class="range-slider" min="19.9" max="79.9" step="1" value="39.9" id="input-price-medio" oninput="updateSim()">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <span>Combinações de Datas por Rota</span>
+                            <span class="input-value-badge" id="val-datas">3 combinações</span>
+                        </div>
+                        <input type="range" class="range-slider" min="1" max="15" step="1" value="3" id="input-datas" oninput="updateSim()">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <span>Cotação Câmbio (R$/US$)</span>
+                            <span class="input-value-badge" id="val-cambio">R$ 5,50</span>
+                        </div>
+                        <input type="range" class="range-slider" min="4.5" max="7.0" step="0.1" value="5.5" id="input-cambio" oninput="updateSim()">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <span>API LLM (R$/usuário/mês)</span>
+                            <span class="input-value-badge" id="val-llm">R$ 2,00</span>
+                        </div>
+                        <input type="range" class="range-slider" min="0.5" max="6.0" step="0.25" value="2.0" id="input-llm" oninput="updateSim()">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <span>Volume Mensal Base (usuários/mês)</span>
+                            <span class="input-value-badge" id="val-vol">100 usuarios</span>
+                        </div>
+                        <input type="range" class="range-slider" min="20" max="500" step="10" value="100" id="input-vol" oninput="updateSim()">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <span>Outros Investimentos Iniciais (R$)</span>
+                            <span class="input-value-badge" id="val-invest">R$ 10.000</span>
+                        </div>
+                        <input type="range" class="range-slider" min="2000" max="30000" step="1000" value="10000" id="input-invest" oninput="updateSim()">
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i data-lucide="calculator"></i> Resultados Recalculados em Tempo Real
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Métrica Simulação</th>
+                                    <th class="num-cell">Valor Atual</th>
+                                    <th class="num-cell">Status / Meta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Custo Dados de Voo / usu</td>
+                                    <td class="num-cell" id="sim-flight-cost">R$ 4,95</td>
+                                    <td class="num-cell"><span class="badge badge-info">Sensível</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Custo Variável Total / usu</td>
+                                    <td class="num-cell" id="sim-var-cost">R$ 8,80</td>
+                                    <td class="num-cell"><span class="badge badge-warning" id="sim-var-cost-pct">22.1% da rec.</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Margem por Passe Médio</td>
+                                    <td class="num-cell" id="sim-margin">R$ 31,10</td>
+                                    <td class="num-cell"><span class="badge badge-success" id="sim-target-badge">Atende &lt;30%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Breakeven Operacional</td>
+                                    <td class="num-cell" id="sim-breakeven">13 usu/mês</td>
+                                    <td class="num-cell"><span class="badge badge-success">Sustentável</span></td>
+                                </tr>
+                                <tr class="highlight-row">
+                                    <td>Lucro Líquido Mensal</td>
+                                    <td class="num-cell" id="sim-profit">R$ 2.710,00</td>
+                                    <td class="num-cell"><span class="badge badge-info">100 usu/mês</span></td>
+                                </tr>
+                                <tr class="highlight-row">
+                                    <td>ROI Projetado em 12 Meses</td>
+                                    <td class="num-cell" id="sim-roi">+202.6%</td>
+                                    <td class="num-cell"><span class="badge badge-success" id="sim-roi-status">Excelente</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: FLIGHT DATA & SENSITIVITY -->
+        <div id="tab-flight" class="tab-panel">
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i data-lucide="plane"></i> Estimativa de Buscas de Voo & Custo Unitário
+                    </div>
+                    <span class="badge badge-info">US$ 2.00 / 1.000 buscas · Câmbio R$ 5,50</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cenário</th>
+                                <th class="num-cell">Combinações / Rota</th>
+                                <th class="num-cell">Rotas / Usuário</th>
+                                <th class="num-cell">Dias / Mês</th>
+                                <th class="num-cell">Buscas / Usuário / Mês</th>
+                                <th class="num-cell">Custo (US$)</th>
+                                <th class="num-cell">Custo (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-success">Mínimo</span></td>
+                                <td class="num-cell">1</td>
+                                <td class="num-cell">5</td>
+                                <td class="num-cell">30</td>
+                                <td class="num-cell">150</td>
+                                <td class="num-cell">US$ 0.30</td>
+                                <td class="num-cell">R$ 1,65</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td><span class="badge badge-info">Base (Plano)</span></td>
+                                <td class="num-cell">3</td>
+                                <td class="num-cell">5</td>
+                                <td class="num-cell">30</td>
+                                <td class="num-cell">450</td>
+                                <td class="num-cell">US$ 0.90</td>
+                                <td class="num-cell">R$ 4,95</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-danger">Máximo</span></td>
+                                <td class="num-cell">10</td>
+                                <td class="num-cell">5</td>
+                                <td class="num-cell">30</td>
+                                <td class="num-cell">1.500</td>
+                                <td class="num-cell">US$ 3.00</td>
+                                <td class="num-cell">R$ 16,50</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i data-lucide="sliders"></i> Sensibilidade: Custo por Usuário/Mês por Flexibilidade
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="num-cell">Combinações</th>
+                                    <th class="num-cell">Buscas / Mês</th>
+                                    <th class="num-cell">Custo (US$)</th>
+                                    <th class="num-cell">Custo (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="num-cell">1</td>
+                                    <td class="num-cell">150</td>
+                                    <td class="num-cell">0.30</td>
+                                    <td class="num-cell heat-low">R$ 1,65</td>
+                                </tr>
+                                <tr>
+                                    <td class="num-cell">2</td>
+                                    <td class="num-cell">300</td>
+                                    <td class="num-cell">0.60</td>
+                                    <td class="num-cell heat-low">R$ 3,30</td>
+                                </tr>
+                                <tr class="highlight-row">
+                                    <td class="num-cell">3 (Base)</td>
+                                    <td class="num-cell">450</td>
+                                    <td class="num-cell">0.90</td>
+                                    <td class="num-cell heat-mid">R$ 4,95</td>
+                                </tr>
+                                <tr>
+                                    <td class="num-cell">5</td>
+                                    <td class="num-cell">750</td>
+                                    <td class="num-cell">1.50</td>
+                                    <td class="num-cell heat-mid">R$ 8,25</td>
+                                </tr>
+                                <tr>
+                                    <td class="num-cell">10</td>
+                                    <td class="num-cell">1.500</td>
+                                    <td class="num-cell">3.00</td>
+                                    <td class="num-cell heat-high">R$ 16,50</td>
+                                </tr>
+                                <tr>
+                                    <td class="num-cell">20</td>
+                                    <td class="num-cell">3.000</td>
+                                    <td class="num-cell">6.00</td>
+                                    <td class="num-cell heat-high">R$ 33,00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i data-lucide="grid"></i> Matriz Custo Mensal Total (R$) por Usuários & Combinações
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Comb. \ Usuários</th>
+                                    <th class="num-cell">15 usu</th>
+                                    <th class="num-cell">30 usu</th>
+                                    <th class="num-cell">100 usu</th>
+                                    <th class="num-cell">200 usu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="num-cell"><strong>1 comb.</strong></td>
+                                    <td class="num-cell heat-low">R$ 24,75</td>
+                                    <td class="num-cell heat-low">R$ 49,50</td>
+                                    <td class="num-cell heat-low">R$ 165,00</td>
+                                    <td class="num-cell heat-low">R$ 330,00</td>
+                                </tr>
+                                <tr class="highlight-row">
+                                    <td class="num-cell"><strong>3 comb. (Base)</strong></td>
+                                    <td class="num-cell heat-mid">R$ 74,25</td>
+                                    <td class="num-cell heat-mid">R$ 148,50</td>
+                                    <td class="num-cell heat-mid">R$ 495,00</td>
+                                    <td class="num-cell heat-mid">R$ 990,00</td>
+                                </tr>
+                                <tr>
+                                    <td class="num-cell"><strong>10 comb.</strong></td>
+                                    <td class="num-cell heat-high">R$ 247,50</td>
+                                    <td class="num-cell heat-high">R$ 495,00</td>
+                                    <td class="num-cell heat-high">R$ 1.650,00</td>
+                                    <td class="num-cell heat-high">R$ 3.300,00</td>
+                                </tr>
+                                <tr>
+                                    <td class="num-cell"><strong>20 comb.</strong></td>
+                                    <td class="num-cell heat-high">R$ 495,00</td>
+                                    <td class="num-cell heat-high">R$ 990,00</td>
+                                    <td class="num-cell heat-high">R$ 3.300,00</td>
+                                    <td class="num-cell heat-high">R$ 6.600,00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: MARGIN PER USER -->
+        <div id="tab-margin" class="tab-panel">
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i data-lucide="layers"></i> Composição do Custo Variável por Componente (R$/usuário/mês)
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Componente de Custo</th>
+                                <th class="num-cell">Mínimo</th>
+                                <th class="num-cell">Base (Plano)</th>
+                                <th class="num-cell">Máximo</th>
+                                <th>Descrição / Fonte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>API de LLM</strong></td>
+                                <td class="num-cell">R$ 1,00</td>
+                                <td class="num-cell">R$ 2,00</td>
+                                <td class="num-cell">R$ 3,00</td>
+                                <td>Criar radar, esclarecer dúvidas, explicar alertas de preço</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dados de Voo</strong></td>
+                                <td class="num-cell">R$ 1,65</td>
+                                <td class="num-cell">R$ 4,95</td>
+                                <td class="num-cell">R$ 16,50</td>
+                                <td>Calculado na aba Dados de Voo (1, 3 ou 10 combinações)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>E-mail Transacional</strong></td>
+                                <td class="num-cell">R$ 0,20</td>
+                                <td class="num-cell">R$ 0,35</td>
+                                <td class="num-cell">R$ 0,50</td>
+                                <td>Alertas via Resend / SendGrid / Postmark</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Gateway de Pagamento</strong></td>
+                                <td class="num-cell">R$ 1,00</td>
+                                <td class="num-cell">R$ 1,50</td>
+                                <td class="num-cell">R$ 2,00</td>
+                                <td>Taxa de cartão / Pix / checkout bancário</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td><strong>CUSTO VARIÁVEL TOTAL</strong></td>
+                                <td class="num-cell"><strong>R$ 3,85</strong></td>
+                                <td class="num-cell"><strong>R$ 8,80</strong></td>
+                                <td class="num-cell"><strong>R$ 22,00</strong></td>
+                                <td><strong>Soma de todos os componentes variáveis</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i data-lucide="tag"></i> Comparativo de Margens por Opção de Preço
+                    </div>
+                    <span class="badge badge-info">Meta do Plano: Custo Variável &lt; 30% da Receita</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Opção de Preço</th>
+                                <th class="num-cell">Preço (R$)</th>
+                                <th class="num-cell">Margem Mínimo</th>
+                                <th class="num-cell">Margem Base</th>
+                                <th class="num-cell">Margem Máximo</th>
+                                <th class="num-cell">Custo/Receita (Base)</th>
+                                <th class="num-cell">Atende Meta? (Base)</th>
+                                <th class="num-cell">Passes p/ Pagar CAC (R$ 15)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Passe – Preço Baixo</strong></td>
+                                <td class="num-cell">R$ 29,90</td>
+                                <td class="num-cell">R$ 26,05</td>
+                                <td class="num-cell">R$ 21,10</td>
+                                <td class="num-cell">R$ 7,90</td>
+                                <td class="num-cell">29.4%</td>
+                                <td class="num-cell"><span class="badge badge-success">Sim</span></td>
+                                <td class="num-cell">0,71 passe</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td><strong>Passe – Preço Médio (Recomendado)</strong></td>
+                                <td class="num-cell"><strong>R$ 39,90</strong></td>
+                                <td class="num-cell"><strong>R$ 36,05</strong></td>
+                                <td class="num-cell"><strong>R$ 31,10</strong></td>
+                                <td class="num-cell"><strong>R$ 17,90</strong></td>
+                                <td class="num-cell"><strong>22.1%</strong></td>
+                                <td class="num-cell"><span class="badge badge-success">Sim</span></td>
+                                <td class="num-cell"><strong>0,48 passe</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Passe – Preço Alto</strong></td>
+                                <td class="num-cell">R$ 49,90</td>
+                                <td class="num-cell">R$ 46,05</td>
+                                <td class="num-cell">R$ 41,10</td>
+                                <td class="num-cell">R$ 27,90</td>
+                                <td class="num-cell">17.6%</td>
+                                <td class="num-cell"><span class="badge badge-success">Sim</span></td>
+                                <td class="num-cell">0,36 passe</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Assinatura Pro (Mensal)</strong></td>
+                                <td class="num-cell">R$ 24,90</td>
+                                <td class="num-cell">R$ 21,05</td>
+                                <td class="num-cell">R$ 16,10</td>
+                                <td class="num-cell">R$ 2,90</td>
+                                <td class="num-cell">35.3%</td>
+                                <td class="num-cell"><span class="badge badge-danger">Não</span></td>
+                                <td class="num-cell">0,93 mês</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: PILOT 60 DAYS -->
+        <div id="tab-pilot" class="tab-panel">
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i data-lucide="rocket"></i> Orçamento & Custo de Caixa do Piloto (60 Dias)
+                    </div>
+                    <span class="badge badge-warning">Não inclui horas da equipe de dev/mkt</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item de Custo do Piloto</th>
+                                <th class="num-cell">Mínimo (15 usu)</th>
+                                <th class="num-cell">Base (25 usu)</th>
+                                <th class="num-cell">Máximo (30 usu)</th>
+                                <th>Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Buscas Totais no Piloto (60 dias)</td>
+                                <td class="num-cell">4.500</td>
+                                <td class="num-cell">22.500</td>
+                                <td class="num-cell">90.000</td>
+                                <td>60 dias × 5 rotas × combinações</td>
+                            </tr>
+                            <tr>
+                                <td>Custo de Dados de Voo (R$)</td>
+                                <td class="num-cell">R$ 49,50</td>
+                                <td class="num-cell">R$ 247,50</td>
+                                <td class="num-cell">R$ 990,00</td>
+                                <td>Preço de lista US$ 2/1.000 buscas @ R$ 5,50</td>
+                            </tr>
+                            <tr>
+                                <td>Hospedagem, DB e Automação (R$)</td>
+                                <td class="num-cell">R$ 0,00</td>
+                                <td class="num-cell">R$ 300,00</td>
+                                <td class="num-cell">R$ 600,00</td>
+                                <td>Planos gratuitos ou dev tiers</td>
+                            </tr>
+                            <tr>
+                                <td>E-mail e Métricas (R$)</td>
+                                <td class="num-cell">R$ 0,00</td>
+                                <td class="num-cell">R$ 0,00</td>
+                                <td class="num-cell">R$ 0,00</td>
+                                <td>Coberto por faixas gratuitas</td>
+                            </tr>
+                            <tr>
+                                <td>API de LLM (Desenvolvimento & Piloto)</td>
+                                <td class="num-cell">R$ 100,00</td>
+                                <td class="num-cell">R$ 200,00</td>
+                                <td class="num-cell">R$ 300,00</td>
+                                <td>Créditos de testes e requisições do piloto</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td><strong>CUSTO TOTAL DE CAIXA DO PILOTO</strong></td>
+                                <td class="num-cell"><strong>R$ 149,50</strong></td>
+                                <td class="num-cell"><strong>R$ 747,50</strong></td>
+                                <td class="num-cell"><strong>R$ 1.890,00</strong></td>
+                                <td><strong>Investimento de caixa direto no teste</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Custo por Usuário no Piloto</strong></td>
+                                <td class="num-cell">R$ 9,97</td>
+                                <td class="num-cell">R$ 29,90</td>
+                                <td class="num-cell">R$ 63,00</td>
+                                <td>Custo amortizado por participante</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: ROI 12 MONTHS -->
+        <div id="tab-roi" class="tab-panel">
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i data-lucide="line-chart"></i> Projeção de Padrão de Resultado & ROI em 12 Meses
+                    </div>
+                    <span class="badge badge-info">Cenário de Custo Selecionado: Base (Custo Var = R$ 8,80)</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Opção de Preço</th>
+                                <th class="num-cell" rowspan="2">Preço (R$)</th>
+                                <th class="num-cell" rowspan="2">Margem/usu (R$)</th>
+                                <th class="num-cell" rowspan="2">Breakeven (usu/mês)</th>
+                                <th class="num-cell" colspan="3" style="text-align: center; border-bottom: 1px solid var(--border-color);">Lucro Mensal (R$)</th>
+                                <th class="num-cell" colspan="3" style="text-align: center; border-bottom: 1px solid var(--border-color);">ROI em 12 Meses (%)</th>
+                            </tr>
+                            <tr>
+                                <th class="num-cell">Cons (50)</th>
+                                <th class="num-cell">Base (100)</th>
+                                <th class="num-cell">Oti (200)</th>
+                                <th class="num-cell">Cons (50)</th>
+                                <th class="num-cell">Base (100)</th>
+                                <th class="num-cell">Oti (200)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Passe – Preço Baixo</strong></td>
+                                <td class="num-cell">R$ 29,90</td>
+                                <td class="num-cell">R$ 21,10</td>
+                                <td class="num-cell">19 usu</td>
+                                <td class="num-cell">R$ 655</td>
+                                <td class="num-cell">R$ 1.710</td>
+                                <td class="num-cell">R$ 3.820</td>
+                                <td class="num-cell heat-low">-26.9%</td>
+                                <td class="num-cell heat-mid">+90.9%</td>
+                                <td class="num-cell heat-high">+326.5%</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td><strong>Passe – Preço Médio (Recomendado)</strong></td>
+                                <td class="num-cell"><strong>R$ 39,90</strong></td>
+                                <td class="num-cell"><strong>R$ 31,10</strong></td>
+                                <td class="num-cell"><strong>13 usu</strong></td>
+                                <td class="num-cell"><strong>R$ 1.155</strong></td>
+                                <td class="num-cell"><strong>R$ 2.710</strong></td>
+                                <td class="num-cell"><strong>R$ 5.820</strong></td>
+                                <td class="num-cell heat-mid">+29.0%</td>
+                                <td class="num-cell heat-high">+202.6%</td>
+                                <td class="num-cell heat-high">+549.8%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Passe – Preço Alto</strong></td>
+                                <td class="num-cell">R$ 49,90</td>
+                                <td class="num-cell">R$ 41,10</td>
+                                <td class="num-cell">10 usu</td>
+                                <td class="num-cell">R$ 1.655</td>
+                                <td class="num-cell">R$ 3.710</td>
+                                <td class="num-cell">R$ 7.820</td>
+                                <td class="num-cell heat-mid">+84.8%</td>
+                                <td class="num-cell heat-high">+314.2%</td>
+                                <td class="num-cell heat-high">+773.1%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Assinatura Pro (Mensal)</strong></td>
+                                <td class="num-cell">R$ 24,90</td>
+                                <td class="num-cell">R$ 16,10</td>
+                                <td class="num-cell">25 usu</td>
+                                <td class="num-cell">R$ 405</td>
+                                <td class="num-cell">R$ 1.210</td>
+                                <td class="num-cell">R$ 2.820</td>
+                                <td class="num-cell heat-low">-54.8%</td>
+                                <td class="num-cell heat-mid">+35.1%</td>
+                                <td class="num-cell heat-high">+214.9%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 7: ASSUMPTIONS & METHODOLOGY -->
+        <div id="tab-assumptions" class="tab-panel">
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i data-lucide="book-open"></i> Premissas, Limites & Notas Metodológicas
+                    </div>
+                </div>
+
+                <div class="callout" style="border-left-color: var(--accent-purple);">
+                    <div class="callout-icon" style="color: var(--accent-purple);"><i data-lucide="help-circle" size="22"></i></div>
+                    <div class="callout-content">
+                        <strong>Para que serve este modelo:</strong>
+                        <p>Estimar custo variável por usuário, margem por opção de preço (passe por viagem ou assinatura), custo de caixa do piloto de 60 dias e ROI em 12 meses para o Agente Inteligente de Viagens.</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper" style="margin-top: 16px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item / Premissa</th>
+                                <th>Valor de Referência</th>
+                                <th>Observação / Fonte de Dados</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Faixas de Preço de Passe</td>
+                                <td>R$ 29,90 a R$ 49,90</td>
+                                <td>Hipótese do plano de execução, a validar no piloto.</td>
+                            </tr>
+                            <tr>
+                                <td>Faixa da Assinatura Pro</td>
+                                <td>R$ 19,90 a R$ 29,90 / mês</td>
+                                <td>Plano de recorrência mensal sem fidelidade.</td>
+                            </tr>
+                            <tr>
+                                <td>Preço de Dados de Voo API</td>
+                                <td>US$ 2.00 por 1.000 buscas</td>
+                                <td>Preço de lista de provedor pay-per-use (set/2026). Amadeus Self-Service desativada em 17/07/2026.</td>
+                            </tr>
+                            <tr>
+                                <td>Custo Fixo Mensal (MVP)</td>
+                                <td>R$ 400,00 / mês</td>
+                                <td>Hospedagem, banco de dados, automações e ferramentas básicas.</td>
+                            </tr>
+                            <tr>
+                                <td>Outros Investimentos Iniciais</td>
+                                <td>R$ 10.000,00</td>
+                                <td>Placeholder para horas da equipe, marketing inicial, jurídico/LGPD.</td>
+                            </tr>
+                            <tr>
+                                <td>Premissas Conservadoras</td>
+                                <td>Comissão Afiliados = R$ 0</td>
+                                <td>Não contabiliza receitas extras de afiliados nem cotas gratuitas repetidas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Agente Inteligente de Viagens &copy; 2026 — Modelo Financeiro de Viabilidade e Margem de Contribuição</p>
+        </footer>
+    </div>
+
+    <!-- Application Scripting -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // State Management
+        let currentScenario = 'Base';
+        let currentTheme = 'dark';
+        
+        // Model Constants & Inputs (Default Base values matching Excel)
+        let modelData = {
+            cambio: 5.50,
+            flightSearchPriceK: 2.00, // USD per 1000 searches
+            routesPerUser: 5,
+            daysPerMonth: 30,
+            
+            scenarios: {
+                Minimo: {
+                    datasComb: 1,
+                    llmCost: 1.00,
+                    emailCost: 0.20,
+                    paymentCost: 1.00,
+                    volCons: 50, volBase: 100, volOti: 200,
+                    pilotUsers: 15, pilotHosting: 0, pilotLLM: 100
+                },
+                Base: {
+                    datasComb: 3,
+                    llmCost: 2.00,
+                    emailCost: 0.35,
+                    paymentCost: 1.50,
+                    volCons: 50, volBase: 100, volOti: 200,
+                    pilotUsers: 25, pilotHosting: 300, pilotLLM: 200
+                },
+                Maximo: {
+                    datasComb: 10,
+                    llmCost: 3.00,
+                    emailCost: 0.50,
+                    paymentCost: 2.00,
+                    volCons: 50, volBase: 100, volOti: 200,
+                    pilotUsers: 30, pilotHosting: 600, pilotLLM: 300
+                }
+            },
+            
+            prices: {
+                baixo: 29.90,
+                medio: 39.90,
+                alto: 49.90,
+                assinatura: 24.90
+            },
+            
+            fixedCost: 400.00,
+            otherInvestment: 10000.00,
+            cacPlaceholder: 15.00
+        };
+
+        // Charts references
+        let roiOverviewChart = null;
+        let costBreakdownChart = null;
+
+        // Initialize Charts
+        function initCharts() {
+            // ROI Overview Chart
+            const ctxRoi = document.getElementById('chart-roi-overview').getContext('2d');
+            roiOverviewChart = new Chart(ctxRoi, {
+                type: 'bar',
+                data: {
+                    labels: ['Passe Baixo (R$ 29.90)', 'Passe Médio (R$ 39.90)', 'Passe Alto (R$ 49.90)', 'Assinatura (R$ 24.90)'],
+                    datasets: [
+                        {
+                            label: 'Conservador (50 usu)',
+                            data: [655*12, 1155*12, 1655*12, 405*12],
+                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Base (100 usu)',
+                            data: [1710*12, 2710*12, 3710*12, 1210*12],
+                            backgroundColor: 'rgba(59, 130, 246, 0.85)',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Otimista (200 usu)',
+                            data: [3820*12, 5820*12, 7820*12, 2820*12],
+                            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: currentTheme === 'dark' ? '#9CA3AF' : '#475569' } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': R$ ' + context.parsed.y.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: currentTheme === 'dark' ? '#9CA3AF' : '#475569' }, grid: { display: false } },
+                        y: { 
+                            ticks: { 
+                                color: currentTheme === 'dark' ? '#9CA3AF' : '#475569',
+                                callback: value => 'R$ ' + value.toLocaleString('pt-BR')
+                            },
+                            grid: { color: currentTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }
+                        }
+                    }
+                }
+            });
+
+            // Cost Breakdown Donut Chart
+            const ctxCost = document.getElementById('chart-cost-breakdown').getContext('2d');
+            costBreakdownChart = new Chart(ctxCost, {
+                type: 'doughnut',
+                data: {
+                    labels: ['API Dados de Voo', 'API LLM', 'Gateway Pagamento', 'E-mail Transacional'],
+                    datasets: [{
+                        data: [4.95, 2.00, 1.50, 0.35],
+                        backgroundColor: [
+                            '#3B82F6',
+                            '#8B5CF6',
+                            '#F59E0B',
+                            '#10B981'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: currentTheme === 'dark' ? '#9CA3AF' : '#475569' } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': R$ ' + context.parsed.toFixed(2).replace('.', ',');
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // Switch Scenario
+        function setScenario(scenario) {
+            currentScenario = scenario;
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(scenario === 'Base' ? 'Base' : scenario === 'Minimo' ? 'Mínimo' : 'Máximo')) {
+                    btn.classList.add('active');
+                }
+            });
+            updateAllCalculations();
+        }
+
+        // Toggle Tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Toggle Light / Dark Theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                currentTheme = 'light';
+                icon.setAttribute('data-lucide', 'sun');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                currentTheme = 'dark';
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+
+            // Update chart text colors
+            if (roiOverviewChart && costBreakdownChart) {
+                const textColor = currentTheme === 'dark' ? '#9CA3AF' : '#475569';
+                roiOverviewChart.options.plugins.legend.labels.color = textColor;
+                roiOverviewChart.options.scales.x.ticks.color = textColor;
+                roiOverviewChart.options.scales.y.ticks.color = textColor;
+                roiOverviewChart.update();
+
+                costBreakdownChart.options.plugins.legend.labels.color = textColor;
+                costBreakdownChart.update();
+            }
+        }
+
+        // Calculate Flight Data Cost for Given Combinations
+        function calcFlightCost(combinations, cambio = modelData.cambio) {
+            const searches = modelData.routesPerUser * modelData.daysPerMonth * combinations;
+            const usd = searches * (modelData.flightSearchPriceK / 1000);
+            const brl = usd * cambio;
+            return { searches, usd, brl };
+        }
+
+        // Update All Calculations Across App
+        function updateAllCalculations() {
+            const sc = modelData.scenarios[currentScenario];
+            const flight = calcFlightCost(sc.datasComb);
+            const varCostTotal = flight.brl + sc.llmCost + sc.emailCost + sc.paymentCost;
+            
+            // Passe Médio margin & breakeven
+            const priceMedio = modelData.prices.medio;
+            const marginMedio = priceMedio - varCostTotal;
+            const breakeven = Math.ceil(modelData.fixedCost / marginMedio);
+
+            // Pilot Cash Cost (Base = 25 users)
+            const pilotSearches = sc.pilotUsers * modelData.routesPerUser * 60 * sc.datasComb;
+            const pilotFlightBrl = pilotSearches * (modelData.flightSearchPriceK / 1000) * modelData.cambio;
+            const pilotTotalCash = pilotFlightBrl + sc.pilotHosting + sc.pilotLLM;
+            
+            // Investment Total
+            const totalInvestment = pilotTotalCash + modelData.otherInvestment;
+
+            // Monthly profit base
+            const monthlyProfitBase = (100 * marginMedio) - modelData.fixedCost;
+            const annualProfitBase = monthlyProfitBase * 12;
+            const roiBase = ((annualProfitBase - totalInvestment) / totalInvestment) * 100;
+
+            // Update Header KPI Cards
+            document.getElementById('kpi-roi').textContent = (roiBase > 0 ? '+' : '') + roiBase.toFixed(1) + '%';
+            document.getElementById('kpi-margin').textContent = 'R$ ' + marginMedio.toFixed(2).replace('.', ',');
+            const marginPct = (marginMedio / priceMedio) * 100;
+            document.getElementById('kpi-margin-pct').textContent = marginPct.toFixed(1) + '% da Receita';
+            document.getElementById('kpi-breakeven').textContent = breakeven + ' usu/mês';
+            document.getElementById('kpi-investment').textContent = 'R$ ' + totalInvestment.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Update Chart Donut Data
+            if (costBreakdownChart) {
+                costBreakdownChart.data.datasets[0].data = [
+                    parseFloat(flight.brl.toFixed(2)),
+                    sc.llmCost,
+                    sc.paymentCost,
+                    sc.emailCost
+                ];
+                costBreakdownChart.update();
+            }
+        }
+
+        // Simulator Logic
+        function updateSim() {
+            const pMedio = parseFloat(document.getElementById('input-price-medio').value);
+            const datas = parseInt(document.getElementById('input-datas').value);
+            const cambio = parseFloat(document.getElementById('input-cambio').value);
+            const llm = parseFloat(document.getElementById('input-llm').value);
+            const vol = parseInt(document.getElementById('input-vol').value);
+            const invest = parseFloat(document.getElementById('input-invest').value);
+
+            // Update Badges
+            document.getElementById('val-price-medio').textContent = 'R$ ' + pMedio.toFixed(2).replace('.', ',');
+            document.getElementById('val-datas').textContent = datas + (datas === 1 ? ' combinação' : ' combinações');
+            document.getElementById('val-cambio').textContent = 'R$ ' + cambio.toFixed(2).replace('.', ',');
+            document.getElementById('val-llm').textContent = 'R$ ' + llm.toFixed(2).replace('.', ',');
+            document.getElementById('val-vol').textContent = vol + ' usuários';
+            document.getElementById('val-invest').textContent = 'R$ ' + invest.toLocaleString('pt-BR');
+
+            // Recalculate
+            const searches = 5 * 30 * datas;
+            const flightBrl = searches * (2 / 1000) * cambio;
+            const varCostTotal = flightBrl + llm + 0.35 + 1.50; // std email & payment
+            const margin = pMedio - varCostTotal;
+            const costRevRatio = (varCostTotal / pMedio) * 100;
+            const breakeven = Math.ceil(400 / margin);
+            const monthlyProfit = (vol * margin) - 400;
+            
+            // Pilot & Total Investment
+            const pilotTotal = (25 * 5 * 60 * datas * (2/1000) * cambio) + 300 + 200;
+            const totalInvest = pilotTotal + invest;
+            const roi12m = (((monthlyProfit * 12) - totalInvest) / totalInvest) * 100;
+
+            // DOM Update
+            document.getElementById('sim-flight-cost').textContent = 'R$ ' + flightBrl.toFixed(2).replace('.', ',');
+            document.getElementById('sim-var-cost').textContent = 'R$ ' + varCostTotal.toFixed(2).replace('.', ',');
+            document.getElementById('sim-var-cost-pct').textContent = costRevRatio.toFixed(1) + '% da rec.';
+            document.getElementById('sim-margin').textContent = 'R$ ' + margin.toFixed(2).replace('.', ',');
+            
+            const badgeMeta = document.getElementById('sim-target-badge');
+            if (costRevRatio <= 30) {
+                badgeMeta.className = 'badge badge-success';
+                badgeMeta.textContent = 'Atende <30%';
+            } else {
+                badgeMeta.className = 'badge badge-danger';
+                badgeMeta.textContent = 'Acima Meta (>30%)';
+            }
+
+            document.getElementById('sim-breakeven').textContent = breakeven + ' usu/mês';
+            document.getElementById('sim-profit').textContent = 'R$ ' + monthlyProfit.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            
+            const roiElem = document.getElementById('sim-roi');
+            roiElem.textContent = (roi12m > 0 ? '+' : '') + roi12m.toFixed(1) + '%';
+            
+            const roiStatus = document.getElementById('sim-roi-status');
+            if (roi12m > 100) {
+                roiStatus.className = 'badge badge-success';
+                roiStatus.textContent = 'Excelente';
+            } else if (roi12m > 0) {
+                roiStatus.className = 'badge badge-warning';
+                roiStatus.textContent = 'Positivo';
+            } else {
+                roiStatus.className = 'badge badge-danger';
+                roiStatus.textContent = 'Prejuízo';
+            }
+        }
+
+        function resetSimulator() {
+            document.getElementById('input-price-medio').value = 39.9;
+            document.getElementById('input-datas').value = 3;
+            document.getElementById('input-cambio').value = 5.5;
+            document.getElementById('input-llm').value = 2.0;
+            document.getElementById('input-vol').value = 100;
+            document.getElementById('input-invest').value = 10000;
+            updateSim();
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateAllCalculations();
+        });
+    </script>
+</body>
+</html>
